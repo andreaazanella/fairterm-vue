@@ -1,0 +1,23 @@
+# Node / frontend
+node_modules/
+dist/
+.env
+.env.local
+
+# R / backend
+.Rproj.user/
+.Rhistory
+.RData
+.Ruserdata
+*.Rproj
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/*
+!.vscode/extensions.json
+
+# Database locale (rigenerabile, evitiamo di versionare dati di test)
+backend/data/*.db
