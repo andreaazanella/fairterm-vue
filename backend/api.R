@@ -70,16 +70,16 @@ function(id, res) {
 function(req, res) {
   body <- req$body
 
-  if (is.null(body$subjectField) || body$subjectField == "") {
+  if (is.null(body$subjectFields) || length(body$subjectFields) == 0) {
     res$status <- 400
-    return(list(error = "subjectField is required"))
+    return(list(error = "At least one subjectField is required"))
   }
 
   relations <- body$relations %||% list()
 
   created <- insertConcept(
     pool,
-    subjectField = body$subjectField,
+    subjectFields = body$subjectFields,
     subdomain = body$subdomain,
     superordinate = relations$superordinate,
     subordinate = relations$subordinate,
@@ -99,11 +99,18 @@ function(req, res) {
 #* @put /concepts/<id>
 function(id, req, res) {
   body <- req$body
+
+  if (is.null(body$subjectFields) || length(body$subjectFields) == 0) {
+    res$status <- 400
+    return(list(error = "At least one subjectField is required"))
+  }
+
   relations <- body$relations %||% list()
 
   updated <- updateConcept(
     pool,
     id = id,
+    subjectFields = body$subjectFields,
     subdomain = body$subdomain,
     superordinate = relations$superordinate,
     subordinate = relations$subordinate,

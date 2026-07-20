@@ -44,6 +44,14 @@ sqlInsertConceptSubject <- "
   VALUES (?, ?)
 "
 
+# Elimina tutti i subject field di un concetto, usata da updateConcept per il
+# pattern "sostituisci tutto l'insieme" (delete + re-insert) quando l'utente
+# modifica quali subject field sono associati
+sqlDeleteConceptSubjects <- "
+  DELETE FROM concept_subject
+  WHERE concept = ?
+"
+
 sqlUpdateConcept <- "
   UPDATE concept
   SET updated_by = ?, updated_on = ?, subdomain = ?,

@@ -27,7 +27,7 @@ getSubjectFields <- function(pool) {
 
 # Lista concetti di un dominio, filtrati per utente corrente.
 # Usata sia per popolare le select "superordinate/subordinate/comprehensive/partitive"
-# (altri concetti dello stesso dominio) sia per la pagina "CONCEPTS".
+# (altri concetti dello stesso dominio) sia per la pagina "Concepts".
 getConcepts <- function(pool, subjectField, user) {
   dbGetQuery(pool, sqlGetConceptsByDomainUser, params = list(subjectField, user))
 }
@@ -42,7 +42,7 @@ getConceptById <- function(pool, id) {
 
   list(
     id = concept$id[[1]],
-    subjectField = subjectFields$subject_field[[1]],
+    subjectFields = I(subjectFields$subject_field),
     subdomain = naIfBlank(concept$subdomain[[1]]),
     relations = list(
       superordinate = naIfBlank(concept$superordinate[[1]]),
@@ -72,7 +72,7 @@ generateConceptId <- function(pool) {
 
 # Inserisce un nuovo concetto. 
 # Restituisce il concetto appena creato (con tutti i campi, incluso id).
-insertConcept <- function(pool, subjectField, subdomain, superordinate, subordinate, comprehensive, partitive, user) {
+insertConcept <- function(pool, subjectFields, subdomain, superordinate, subordinate, comprehensive, partitive, user) {
 
   id <- generateConceptId(pool)
   now <- format(Sys.time(), "%Y-%m-%dT%H:%M:%SZ", tz = "UTC")
@@ -83,8 +83,10 @@ insertConcept <- function(pool, subjectField, subdomain, superordinate, subordin
     comprehensive %||% "", partitive %||% ""
   ))
 
-  dbExecute(pool, sqlInsertConceptSubject, params = list(id, subjectField))
-  
+  for (subjectField in subjectFields) {
+    dbExecute(pool, sqlInsertConceptSubject, params = list(id, subjectField))
+  }
+
   getConceptById(pool, id)
 }
 
@@ -93,7 +95,7 @@ insertConcept <- function(pool, subjectField, subdomain, superordinate, subordin
 # Aggiorna un concetto esistente.
 # Restituisce NULL se il concetto non esiste.
 # subjectField e id non sono parametri di questa funzione (per design non sono modificabili).
-updateConcept <- function(pool, id, subdomain, superordinate, subordinate, comprehensive, partitive, user) {
+updateConcept <- function(pool, id, subjectFields, subdomain, superordinate, subordinate, comprehensive, partitive, user) {
 
   existing <- getConceptById(pool, id)
   if (is.null(existing)) return(NULL)
@@ -104,6 +106,12 @@ updateConcept <- function(pool, id, subdomain, superordinate, subordinate, compr
     user, now, subdomain %||% "", superordinate %||% "", subordinate %||% "",
     comprehensive %||% "", partitive %||% "", id
   ))
-  
+
+  dbExecute(pool, sqlDeleteConceptSubjects, params = list(id))
+
+  for (subjectField in subjectFields) {
+    dbExecute(pool, sqlInsertConceptSubject, params = list(id, subjectField))
+  }
+
   getConceptById(pool, id)
 }
