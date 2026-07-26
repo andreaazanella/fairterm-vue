@@ -1,7 +1,24 @@
+<template>
+  <div class="app-shell">
+    <Sidebar />
+    <main class="app-main">
+      <RouterView />
+    </main>
+  </div>
+</template>
+
 <script setup>
-import HelloWorld from './components/HelloWorld.vue'
+import { RouterView } from 'vue-router'
+import Sidebar from './components/layout/Sidebar.vue'
 </script>
 
-<template>
-  <HelloWorld />
-</template>
+<style scoped>
+.app-shell {
+  min-height: 100vh;
+}
+
+.app-main {
+  margin-left: var(--sidebar-width);
+  min-height: 100vh;
+}
+</style>

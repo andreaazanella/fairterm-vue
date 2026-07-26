@@ -93,7 +93,6 @@ function(req, res) {
 }
 
 #* Aggiorna un concetto esistente.
-#* subjectField e ID non sono accettati nel body (per design non sono modificabili).
 #* @param id L'ID del concetto
 #* @parser json
 #* @put /concepts/<id>

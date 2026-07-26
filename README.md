@@ -9,20 +9,30 @@ Relatore: Prof. Giorgio Maria Di Nunzio.
 ## Struttura
 
 - `backend/` — API Plumber, logica R invariata
-- `frontend/` — applicazione Vue 3 (Vite)
+- `frontend/` — applicazione Vue 3
 - `docs/` — specifica API, modello dati, decisioni architetturali
 
 ## Setup
 
-### Backend
+### Backend (opzione da terminale)
 ```bash
 cd backend
-# istruzioni Plumber da aggiungere
+Rscript plumber.r
+```
+
+### Backend (opzione con Rstudio )
+```bash
+install.packages("plumber")   # solo la prima volta
+
+setwd("path/to/fairterm-vue/backend")
+library(plumber)
+pr <- plumb("api.R")
+pr$run(port = 8000)
 ```
 
 ### Frontend
-```bash
+```R
 cd frontend
-npm install
+npm install     # solo la prima volta
 npm run dev
 ```

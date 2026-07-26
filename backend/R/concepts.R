@@ -60,17 +60,17 @@ getConceptById <- function(pool, id) {
 # --- INSERT ----------------------------------------------------------------
 
 # Genera un ID.
-# Stessa logica random 0-9999 dell'app originale, ma con controllo
+# Stessa logica random 0-999 dell'app originale, ma con controllo
 # di unicità su TUTTO il database invece che solo sul dominio corrente.
 generateConceptId <- function(pool) {
   repeat {
-    candidate <- as.character(floor(runif(1, min = 0, max = 10000)))
+    candidate <- as.character(floor(runif(1, min = 0, max = 1000)))
     exists <- dbGetQuery(pool, sqlCheckConceptIdExists, params = list(candidate))$n[[1]]
     if (exists == 0) return(candidate)
   }
 }
 
-# Inserisce un nuovo concetto. 
+# Inserisce un nuovo concetto.
 # Restituisce il concetto appena creato (con tutti i campi, incluso id).
 insertConcept <- function(pool, subjectFields, subdomain, superordinate, subordinate, comprehensive, partitive, user) {
 
@@ -94,7 +94,6 @@ insertConcept <- function(pool, subjectFields, subdomain, superordinate, subordi
 
 # Aggiorna un concetto esistente.
 # Restituisce NULL se il concetto non esiste.
-# subjectField e id non sono parametri di questa funzione (per design non sono modificabili).
 updateConcept <- function(pool, id, subjectFields, subdomain, superordinate, subordinate, comprehensive, partitive, user) {
 
   existing <- getConceptById(pool, id)
