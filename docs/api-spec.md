@@ -2,7 +2,7 @@
 
 Bozza di lavoro. Riflette le decisioni prese finora nella progettazione UI/UX.
 Endpoint annidati (nested): `GET /concepts/:id` restituisce concetto + lingue + termini
-in un'unica risposta, per allinearsi a come la pagina "CONCEPT DETAIL" mostra tutto insieme.
+in un'unica risposta, per allinearsi a come la pagina "Concetto specifico" mostra tutto insieme.
 
 Base path assunto: `/api`
 
@@ -12,7 +12,7 @@ Base path assunto: `/api`
 
 Liste vocabolario statiche (subject field, lingue ISO, valori di usage/POS/gender/number/type).
 Nell'app Shiny sono caricate una volta all'avvio da file `.rds`; qui diventano un unico
-endpoint da richiamare una volta e tenere in cache lato frontend.
+endpoint da richiamare una volta e tenere in cache lato frontend (composable, non Pinia).
 
 ### `GET /reference-data`
 
