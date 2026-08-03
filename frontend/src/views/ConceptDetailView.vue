@@ -43,7 +43,7 @@
             </div>
             <!-- Title and subtitle -->
             <div>
-              <h2>Concept Information</h2>
+              <h2>Concept information</h2>
               <p class="card__subtitle">Define the general context of the concept</p>
             </div>
           </div>
