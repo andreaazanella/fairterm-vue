@@ -7,7 +7,12 @@
         <span>></span>
         <span class="breadcrumb__current">New Concept</span>
       </nav>
+    </header>
 
+    <hr class="page__divider" />
+
+    <div class="title-row">
+      <h1 class="concept-title">New Concept</h1>
       <div class="page-header__actions">
         <!-- Cancel button-->
         <RouterLink to="/concepts" class="btn btn--ghost">Cancel</RouterLink>
@@ -17,7 +22,7 @@
           {{ saving ? 'Saving...' : 'Save Concept' }}
         </button>
       </div>
-    </header>
+    </div>
 
     <!-- Error message -->
     <p v-if="errorMessage" class="form-error">⚠️ {{ errorMessage }}</p>
@@ -78,8 +83,8 @@
           </div>
         </div>
 
-        <!-- Superordinate -->
         <div class="relations-grid">
+          <!-- Superordinate -->
           <div class="field">
             <label>Superordinate</label>
             <select class="dropdown" v-model="form.relations.superordinate" required>

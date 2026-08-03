@@ -158,6 +158,12 @@ select.dropdown:invalid {
   gap: 10px;
 }
 
+.page__divider {
+  border: none;
+  border-top: 1px solid var(--color-border);
+  margin: 20px 0;
+}
+
 .breadcrumb {
   display: flex;
   align-items: center;
@@ -169,6 +175,18 @@ select.dropdown:invalid {
 .breadcrumb__current {
   color: var(--color-ink);
   font-weight: 600;
+}
+
+.title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+}
+
+.concept-title {
+  font-size: 32px;
+  margin: 0;
 }
 
 .card {
@@ -254,8 +272,61 @@ select.dropdown:invalid {
   font-size: 14px;
 }
 
-/* footer istituzionale, uguale su tutte le pagine */
+/* elenco subject field in sola lettura */
+.tag-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
 
+.tag {
+  display: inline-flex;
+  align-items: center;
+  background: #fff;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  padding: 4px 10px;
+  font-size: 13px;
+}
+
+.tag--muted {
+  color: var(--color-muted);
+  border-style: dashed;
+  font-style: italic;
+}
+
+.page-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 100px 20px;
+  color: var(--color-muted);
+  text-align: center;
+}
+
+.page-state__spinner {
+  width: 28px;
+  height: 28px;
+  border: 3px solid var(--color-border);
+  border-top-color: var(--color-accent);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* riga minimale di audit, in fondo alla card */
+.meta-line {
+  font-size: 12px;
+  color: var(--color-muted);
+  margin-top: 20px;
+}
+
+/* footer istituzionale, uguale su tutte le pagine */
 .app-footer {
   max-width: var(--content-width);
   margin: 0 auto;
