@@ -1,15 +1,19 @@
 <template>
   <div class="page">
+
+    <!-- Loading -->
     <div v-if="loading" class="page-state">
       <div class="page-state__spinner" aria-hidden="true"></div>
       <p>Loading concept...</p>
     </div>
 
+    <!-- Not found -->
     <div v-else-if="notFound" class="page-state">
       <p>Concept not found.</p>
       <RouterLink to="/concepts" class="btn btn--ghost">Back to Concepts</RouterLink>
     </div>
 
+    <!-- Concept detail -->
     <template v-else-if="concept">
       <header class="page-header">
         <!-- Breadcrumb navigation -->
@@ -25,6 +29,7 @@
       <div class="title-row">
         <h1 class="concept-title">Concept: {{ concept.id }}</h1>
         <div class="page-header__actions">
+          <!-- Edit button -->
           <button type="button" class="btn btn--primary">
             <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="currentColor"><path d="M200-200h57l391-391-57-57-391 391v57Zm-80 80v-170l528-527q12-11 26.5-17t30.5-6q16 0 31 6t26 18l55 56q12 11 17.5 26t5.5 30q0 16-5.5 30.5T817-647L290-120H120Z"/></svg>
             Edit concept
@@ -84,7 +89,7 @@
             </div>
             <!-- Title and subtitle -->
             <div>
-              <h2>Concept Relations</h2>
+              <h2>Concept relations</h2>
               <p class="card__subtitle">Link this concept to other existing concepts</p>
             </div>
           </div>
