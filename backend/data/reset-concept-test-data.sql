@@ -1,9 +1,3 @@
--- reset-concept-test-data.sql
--- Svuota e ripopola SOLO concept e concept_subject con 5 concetti di test verosimili.
--- user, subject_field, language non vengono toccate.
---
--- Eseguibile da DB Browser for SQLite: apri temp.db -> tab "Execute SQL" -> incolla -> Execute.
-
 DELETE FROM concept;
 DELETE FROM concept_subject;
 

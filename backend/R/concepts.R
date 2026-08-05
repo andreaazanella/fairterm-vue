@@ -16,7 +16,7 @@ library(DBI)
 # Converte una stringa vuota/NA in NULL, per non restituire " " al frontend
 # al posto di un vero "nessun valore"
 naIfBlank <- function(x) {
-  if (is.null(x) || length(x) == 0 || is.na(x) || trimws(x) == "") NULL else x
+  if (is.null(x) || length(x) == 0 || is.na(x) || trimws(x) == "") NA_character_ else x
 }
 
 # --- SELECT ---------------------------------------------------------------
@@ -41,19 +41,19 @@ getConceptById <- function(pool, id) {
   subjectFields <- dbGetQuery(pool, sqlGetSubjectFieldsForConcept, params = list(id))
 
   list(
-    id = concept$id[[1]],
+    id = jsonlite::unbox(concept$id[[1]]),
     subjectFields = I(subjectFields$subject_field),
-    subdomain = naIfBlank(concept$subdomain[[1]]),
+    subdomain = jsonlite::unbox(naIfBlank(concept$subdomain[[1]])),
     relations = list(
-      superordinate = naIfBlank(concept$superordinate[[1]]),
-      subordinate = naIfBlank(concept$subordinate[[1]]),
-      comprehensive = naIfBlank(concept$comprehensive[[1]]),
-      partitive = naIfBlank(concept$partitive[[1]])
+      superordinate = jsonlite::unbox(naIfBlank(concept$superordinate[[1]])),
+      subordinate = jsonlite::unbox(naIfBlank(concept$subordinate[[1]])),
+      comprehensive = jsonlite::unbox(naIfBlank(concept$comprehensive[[1]])),
+      partitive = jsonlite::unbox(naIfBlank(concept$partitive[[1]]))
     ),
-    createdBy = concept$created_by[[1]],
-    createdOn = concept$created_on[[1]],
-    updatedBy = concept$updated_by[[1]],
-    updatedOn = concept$updated_on[[1]]
+    createdBy = jsonlite::unbox(concept$created_by[[1]]),
+    createdOn = jsonlite::unbox(concept$created_on[[1]]),
+    updatedBy = jsonlite::unbox(concept$updated_by[[1]]),
+    updatedOn = jsonlite::unbox(concept$updated_on[[1]])
   )
 }
 

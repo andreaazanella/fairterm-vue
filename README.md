@@ -1,9 +1,9 @@
-# FAIRterm 2.0 — Vue Migration
+# FAIRterm 2.0
 
 Migrazione di FAIRterm 2.0 da R Shiny a un'architettura disaccoppiata:
 R + Plumber (backend REST) e Vue.js (frontend).
 
-Tesi triennale — Andrea Zanella, Ingegneria Informatica, Università di Padova.
+Tesi triennale, Andrea Zanella, Ingegneria Informatica, Università di Padova.
 Relatore: Prof. Giorgio Maria Di Nunzio.
 
 ## Struttura
