@@ -64,3 +64,76 @@ sqlCheckConceptIdExists <- "
   FROM concept
   WHERE id = ?
 "
+
+# query per la risorsa "language" (tabella concept_language)
+
+sqlGetLanguages <- "
+  SELECT id, name
+  FROM language
+  ORDER BY name
+"
+
+sqlGetLanguagesForConcept <- "
+  SELECT concept, language, created_by, created_on, updated_by, updated_on,
+         definition, external_cross_reference, source, notes
+  FROM concept_language
+  WHERE concept = ?
+  ORDER BY language
+"
+
+sqlGetConceptLanguage <- "
+  SELECT concept, language
+  FROM concept_language
+  WHERE concept = ? AND language = ?
+"
+
+sqlInsertConceptLanguage <- "
+  INSERT INTO concept_language
+    (concept, language, created_by, created_on, updated_by, updated_on, definition, external_cross_reference, source, notes)
+  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+"
+
+sqlUpdateConceptLanguage <- "
+  UPDATE concept_language
+  SET updated_by = ?, updated_on = ?, definition = ?, external_cross_reference = ?, source = ?, notes = ?
+  WHERE concept = ? AND language = ?
+"
+
+# query per la risorsa "term" (tabella term)
+
+sqlGetTermsForLanguage <- "
+  SELECT id, concept, language, designation, usage, part_of_speech, grammatical_gender,
+         grammatical_number, type, context, external_cross_reference, source, register,
+         collocation, notes, created_by, created_on, updated_by, updated_on
+  FROM term
+  WHERE concept = ? AND language = ?
+  ORDER BY id
+"
+
+sqlGetTerm <- "
+  SELECT id
+  FROM term
+  WHERE id = ? AND concept = ? AND language = ?
+"
+
+sqlInsertTerm <- "
+  INSERT INTO term
+    (id, concept, language, designation, usage, part_of_speech, grammatical_gender,
+     grammatical_number, type, context, external_cross_reference, source, register,
+     collocation, notes, created_by, created_on, updated_by, updated_on)
+  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+"
+
+sqlUpdateTerm <- "
+  UPDATE term
+  SET designation = ?, usage = ?, part_of_speech = ?, grammatical_gender = ?,
+      grammatical_number = ?, type = ?, context = ?, external_cross_reference = ?,
+      source = ?, register = ?, collocation = ?, notes = ?, updated_by = ?, updated_on = ?
+  WHERE id = ? AND concept = ? AND language = ?
+"
+
+sqlCheckTermIdExists <- "
+  SELECT COUNT(*) AS n
+  FROM term
+  WHERE id = ?
+"

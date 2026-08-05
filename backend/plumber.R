@@ -1,11 +1,6 @@
 # plumber.R
+
 # Entry point.
-#
-# Da terminale (dalla cartella backend/):
-#   Rscript plumber.R
-#
-# Oppure da RStudio, aprendo questo file e usando il bottone "Run API"
-# (visibile automaticamente perché RStudio riconosce le annotazioni #* di api.R).
 
 library(plumber)
 

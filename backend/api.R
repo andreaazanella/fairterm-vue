@@ -1,12 +1,18 @@
 # api.R
 
 # Router Plumber.
-# [Scope attuale: solo CONCEPT (visualizzazione concetto specifico, creazione, modifica)].
+
+# Scope attuale: CONCEPT (visualizzazione, creazione, modifica) e LANGUAGE/TERM
+# annidati sotto un concetto (aggiunta e modifica). Nessuna DELETE ancora implementata
+# su nessuna delle tre risorse.
 
 library(plumber)
 
 source("R/db.R")
+source("R/utils.R")
 source("R/concepts.R")
+source("R/languages.R")
+source("R/terms.R")
 source("sql/statements.R")
 
 pool <- createPool()
@@ -16,7 +22,7 @@ pool <- createPool()
 currentUser <- "user0"
 
 #* @apiTitle FAIRterm 2.0 API
-#* @apiDescription Endpoint REST per la sezione CONCEPT (subject field, subdomain, relazioni).
+#* @apiDescription Endpoint REST per concept (subject field, subdomain, relazioni), language e term.
 
 #* Abilita CORS per lo sviluppo locale.
 #* @filter cors
@@ -32,18 +38,23 @@ function(req, res) {
   }
 }
 
-#* Liste vocabolario statiche.
-#* Per ora solo i subject field (l'unico dato di riferimento che serve alle pagine CONCEPT),
-#* languages/usage/POS/... verranno aggiunti qui quando lo scope si allargherà a lingue e termini.
+#* Elenco delle voci di riferimento statiche.
+#* Per ora disponibili subject field e lingue. Le liste di usage, part of speech,
+#* grammatical gender/number e type verranno aggiunte qui
 #* @get /reference-data
 function() {
-  list(subjectFields = getSubjectFields(pool))
+  list(
+    subjectFields = getSubjectFields(pool),
+    languages = getLanguages(pool)
+  )
 }
 
-#* Lista concetti di un dominio (utente corrente).
-#* Usata per popolare le select superordinate/subordinate/comprehensive/partitive
+# --- CONCEPTS ---------------------------------------------------------------
+
+#* Elenco dei concetti di un dominio per l'utente corrente.
+#* Viene usato per popolare le select superordinate, subordinate, comprehensive e partitive
 #* con gli altri concetti dello stesso subject field.
-#* @param subjectField Il subject field da filtrare
+#* @param subjectField Il subject field da filtrare.
 #* @get /concepts
 function(subjectField = "") {
   if (subjectField == "") {
@@ -52,8 +63,8 @@ function(subjectField = "") {
   getConcepts(pool, subjectField, currentUser)
 }
 
-#* Dettaglio di un concetto (senza lingue/termini per ora)
-#* @param id L'ID del concetto
+#* Dettaglio di un concetto, con lingue e termini annidati.
+#* @param id L'ID del concetto.
 #* @get /concepts/<id>
 function(id, res) {
   concept <- getConceptById(pool, id)
@@ -64,7 +75,7 @@ function(id, res) {
   concept
 }
 
-#* Crea un nuovo concetto
+#* Crea un nuovo concetto.
 #* @parser json
 #* @post /concepts
 function(req, res) {
@@ -93,7 +104,7 @@ function(req, res) {
 }
 
 #* Aggiorna un concetto esistente.
-#* @param id L'ID del concetto
+#* @param id L'ID del concetto.
 #* @parser json
 #* @put /concepts/<id>
 function(id, req, res) {
@@ -124,4 +135,128 @@ function(id, req, res) {
   }
 
   updated
+}
+
+# --- LANGUAGES ---------------------------------------------------------------
+
+#* Aggiunge una nuova lingua a un concetto.
+#* @param id ID del concetto.
+#* @parser json
+#* @post /concepts/<id>/languages
+function(id, req, res) {
+  body <- req$body
+
+  if (is.null(body$language) || body$language == "") {
+    res$status <- 400
+    return(list(error = "language is required"))
+  }
+  if (is.null(body$definition) || body$definition == "") {
+    res$status <- 400
+    return(list(error = "definition is required"))
+  }
+
+  concept <- getConceptById(pool, id)
+  if (is.null(concept)) {
+    res$status <- 404
+    return(list(error = "Concept not found"))
+  }
+
+  result <- insertConceptLanguage(
+    pool, id, body$language, body$definition,
+    body$externalCrossReference, body$source, body$notes, currentUser
+  )
+
+  if (!is.null(result$error)) {
+    res$status <- 409
+    return(list(error = "This language is already associated with the concept"))
+  }
+
+  res$status <- 201
+  list(languages = result$languages)
+}
+
+#* Aggiorna una lingua esistente associata a un concetto.
+#* Restituisce 404 se la lingua non è associata al concetto.
+#* @param id ID del concetto.
+#* @param code Codice della lingua.
+#* @parser json
+#* @put /concepts/<id>/languages/<code>
+function(id, code, req, res) {
+  body <- req$body
+
+  updated <- updateConceptLanguage(
+    pool, id, code, body$definition, body$externalCrossReference, body$source, body$notes, currentUser
+  )
+
+  if (is.null(updated)) {
+    res$status <- 404
+    return(list(error = "Language not found for this concept"))
+  }
+
+  list(languages = updated)
+}
+
+# --- TERMS ---------------------------------------------------------------
+
+#* Aggiunge un nuovo termine a una sezione lingua.
+#* @param id ID del concetto.
+#* @param code Codice della lingua.
+#* @parser json
+#* @post /concepts/<id>/languages/<code>/terms
+function(id, code, req, res) {
+  body <- req$body
+
+  if (is.null(body$designation) || body$designation == "") {
+    res$status <- 400
+    return(list(error = "designation is required"))
+  }
+  if (is.null(body$usage) || body$usage == "") {
+    res$status <- 400
+    return(list(error = "usage is required"))
+  }
+
+  terms <- insertTerm(
+    pool, id, code, body$designation, body$usage, body$partOfSpeech,
+    body$grammaticalGender, body$grammaticalNumber, body$type, body$context,
+    body$externalCrossReference, body$source, body$register, body$collocation, body$notes,
+    currentUser
+  )
+
+  res$status <- 201
+  list(terms = terms)
+}
+
+#* Aggiorna un termine esistente. Concept e language non sono modificabili
+#* (non a caso non compaiono nel body, solo nel percorso).
+#* Restituisce 404 se il termine non è associato a questo concetto/lingua.
+#* @param id ID del concetto.
+#* @param code Codice della lingua.
+#* @param termId ID del termine.
+#* @parser json
+#* @put /concepts/<id>/languages/<code>/terms/<termId>
+function(id, code, termId, req, res) {
+  body <- req$body
+
+  if (is.null(body$designation) || body$designation == "") {
+    res$status <- 400
+    return(list(error = "designation is required"))
+  }
+  if (is.null(body$usage) || body$usage == "") {
+    res$status <- 400
+    return(list(error = "usage is required"))
+  }
+
+  updated <- updateTerm(
+    pool, termId, id, code, body$designation, body$usage, body$partOfSpeech,
+    body$grammaticalGender, body$grammaticalNumber, body$type, body$context,
+    body$externalCrossReference, body$source, body$register, body$collocation, body$notes,
+    currentUser
+  )
+
+  if (is.null(updated)) {
+    res$status <- 404
+    return(list(error = "Term not found for this concept/language"))
+  }
+
+  list(terms = updated)
 }
