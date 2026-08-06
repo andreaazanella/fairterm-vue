@@ -19,3 +19,8 @@ export async function updateConcept(id, payload) {
   const { data } = await api.put(`/concepts/${id}`, payload)
   return data
 }
+
+export async function deleteConcept(id) {
+  const { data } = await api.delete(`/concepts/${id}`)
+  return data
+}

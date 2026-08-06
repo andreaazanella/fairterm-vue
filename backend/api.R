@@ -38,14 +38,19 @@ function(req, res) {
   }
 }
 
-#* Elenco delle voci di riferimento statiche.
-#* Per ora disponibili subject field e lingue. Le liste di usage, part of speech,
-#* grammatical gender/number e type verranno aggiunte qui
+#* Elenco delle voci di riferimento statiche: subject field, lingue, e i cinque
+#* vocabolari del termine (usage, type, part of speech, grammatical gender/number).
 #* @get /reference-data
 function() {
+  vocab <- getTermVocabularies()
   list(
     subjectFields = getSubjectFields(pool),
-    languages = getLanguages(pool)
+    languages = getLanguages(pool),
+    usageValues = vocab$usageValues,
+    typeValues = vocab$typeValues,
+    posValues = vocab$posValues,
+    genderValues = vocab$genderValues,
+    numberValues = vocab$numberValues
   )
 }
 
@@ -137,6 +142,19 @@ function(id, req, res) {
   updated
 }
 
+#* Elimina un concetto (cascata su subject field, lingue, termini; ripulisce
+#* anche i riferimenti da altri concetti che lo referenziavano).
+#* @param id ID del concetto.
+#* @delete /concepts/<id>
+function(id, res) {
+  deleted <- deleteConcept(pool, id)
+  if (!deleted) {
+    res$status <- 404
+    return(list(error = "Concept not found"))
+  }
+  list(deleted = jsonlite::unbox(TRUE))
+}
+
 # --- LANGUAGES ---------------------------------------------------------------
 
 #* Aggiunge una nuova lingua a un concetto.
@@ -194,6 +212,19 @@ function(id, code, req, res) {
   }
 
   list(languages = updated)
+}
+
+#* Elimina una lingua associata a un concetto (cascata sui suoi termini).
+#* @param id ID del concetto.
+#* @param code Codice della lingua.
+#* @delete /concepts/<id>/languages/<code>
+function(id, code, res) {
+  deleted <- deleteConceptLanguage(pool, id, code)
+  if (!deleted) {
+    res$status <- 404
+    return(list(error = "Language not found for this concept"))
+  }
+  list(deleted = jsonlite::unbox(TRUE))
 }
 
 # --- TERMS ---------------------------------------------------------------
@@ -259,4 +290,18 @@ function(id, code, termId, req, res) {
   }
 
   list(terms = updated)
+}
+
+#* Elimina un termine.
+#* @param id ID del concetto.
+#* @param code Codice della lingua.
+#* @param termId ID del termine.
+#* @delete /concepts/<id>/languages/<code>/terms/<termId>
+function(id, code, termId, res) {
+  deleted <- deleteTerm(pool, termId, id, code)
+  if (!deleted) {
+    res$status <- 404
+    return(list(error = "Term not found for this concept/language"))
+  }
+  list(deleted = jsonlite::unbox(TRUE))
 }

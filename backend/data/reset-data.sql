@@ -1,6 +1,8 @@
 -- reset-full-test-data.sql
+
 -- Reset completo di concept, concept_subject, concept_language, term.
 -- user, subject_field, language NON vengono toccate.
+
 -- 6 concetti (101-105 di user0, 106 di user1), con lingue e termini
 -- distribuiti in modo non uniforme per coprire i casi limite (concetti senza
 -- lingue, con una lingua, con più lingue, termini singoli e multipli).

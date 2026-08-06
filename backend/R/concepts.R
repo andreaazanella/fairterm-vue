@@ -118,4 +118,24 @@ updateConcept <- function(pool, id, subjectFields, subdomain, superordinate, sub
 
 # --- DELETE ------------------------------------------------------------
 
-# (non ancora implementata)
+# Nuova funzione
+# Elimina un concetto e tutto ciò che dipende da lui (subject field, lingue,
+# termini), poi ripulisce i riferimenti da altri concetti che lo avevano come
+# relazione (superordinate/subordinate/comprehensive/partitive), per non
+# lasciare id orfani in giro. Restituisce FALSE se il concetto non esiste.
+deleteConcept <- function(pool, id) {
+  existing <- getConceptById(pool, id)
+  if (is.null(existing)) return(FALSE)
+
+  dbExecute(pool, sqlDeleteTermsForConcept, params = list(id))
+  dbExecute(pool, sqlDeleteConceptLanguagesForConcept, params = list(id))
+  dbExecute(pool, sqlDeleteConceptSubjects, params = list(id))
+  dbExecute(pool, sqlDeleteConcept, params = list(id))
+
+  dbExecute(pool, sqlClearSuperordinateReferences, params = list(id))
+  dbExecute(pool, sqlClearSubordinateReferences, params = list(id))
+  dbExecute(pool, sqlClearComprehensiveReferences, params = list(id))
+  dbExecute(pool, sqlClearPartitiveReferences, params = list(id))
+
+  TRUE
+}

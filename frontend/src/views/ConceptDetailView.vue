@@ -34,6 +34,11 @@
             <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="currentColor"><path d="M200-200h57l391-391-57-57-391 391v57Zm-80 80v-170l528-527q12-11 26.5-17t30.5-6q16 0 31 6t26 18l55 56q12 11 17.5 26t5.5 30q0 16-5.5 30.5T817-647L290-120H120Z"/></svg>
             Edit concept
           </button>
+
+          <button type="button" class="btn btn--danger" @click="handleDeleteConcept">
+            <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="currentColor"><path d="M280-120q-33 0-56.5-23.5T200-200v-520h-40v-80h200v-40h240v40h200v80h-40v520q0 33-23.5 56.5T680-120H280Zm400-600H280v520h400v-520ZM360-280h80v-360h-80v360Zm160 0h80v-360h-80v360ZM280-720v520-520Z"/></svg>
+            Delete concept
+          </button>
         </div>
       </div>
 
@@ -142,31 +147,111 @@
           Created {{ formatDate(concept.createdOn) }} · Last updated {{ formatDate(concept.updatedOn) }}
         </p>
       </section>
+
+      <section class="card">
+        <div class="card__header card__header--split">
+          <div class="card__header-main">
+            <div class="card__header-icon" aria-hidden="true">
+              <svg xmlns="http://www.w3.org/2000/svg" height="25px" viewBox="0 -960 960 960" width="25px" fill="currentColor">
+                <path d="M480-80q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-82q26-36 45-75t31-83H404q12 44 31 83t45 75Zm-104-16q-18-33-31.5-68.5T322-320H204q29 50 72.5 87t99.5 55Zm208 0q56-18 99.5-55t72.5-87H638q-9 38-22.5 73.5T584-178ZM170-400h136q-3-20-4.5-39.5T300-480q0-21 1.5-40.5T306-560H170q-5 20-7.5 39.5T160-480q0 21 2.5 40.5T170-400Zm216 0h188q3-20 4.5-39.5T580-480q0-21-1.5-40.5T574-560H386q-3 20-4.5 39.5T380-480q0 21 1.5 40.5T386-400Zm268 0h136q5-20 7.5-39.5T800-480q0-21-2.5-40.5T790-560H654q3 20 4.5 39.5T660-480q0 21-1.5 40.5T654-400Zm-16-240h118q-29-50-72.5-87T584-782q18 33 31.5 68.5T638-640Zm-234 0h152q-12-44-31-83t-45-75q-26 36-45 75t-31 83Zm-224 0h118q9-38 22.5-73.5T376-782q-56 18-99.5 55T204-640Z"/>
+              </svg>
+            </div>
+            <div>
+              <h2>Associated languages ({{ concept.languages.length }})</h2>
+              <p class="card__subtitle">Language sections and their terms</p>
+            </div>
+          </div>
+          <button type="button" class="btn btn--ghost btn--sm" @click="showAddLanguageModal = true">
+            <svg xmlns="http://www.w3.org/2000/svg" height="18px" viewBox="0 -960 960 960" width="18px" fill="currentColor"><path d="M440-440H200v-80h240v-240h80v240h240v80H520v240h-80v-240Z"/></svg>
+            Add language
+          </button>
+        </div>
+
+        <p v-if="concept.languages.length === 0" class="placeholder-note">
+          No languages added yet.
+        </p>
+        
+        <LanguageSection
+          v-for="lang in concept.languages"
+          :key="lang.language"
+          :language="lang"
+          @edit-request="editingLanguage = $event"
+          @add-term-request="handleAddTermRequest"
+          @edit-term-request="handleEditTermRequest"
+          @delete-language-request="handleDeleteLanguageRequest"
+          @delete-term-request="handleDeleteTermRequest"
+        />
+      </section>
     </template>
 
-    <!-- Edit Concept Modal -->
     <EditConceptModal
-          v-if="showEditModal && concept"
-          :concept="concept"
-          @close="showEditModal = false"
-          @saved="handleSaved"
+      v-if="showEditModal && concept"
+      :concept="concept"
+      @close="showEditModal = false"
+      @saved="handleSaved"
+    />
+
+    <AddLanguageModal
+      v-if="showAddLanguageModal && concept"
+      :concept-id="concept.id"
+      :existing-language-codes="concept.languages.map((l) => l.language)"
+      @close="showAddLanguageModal = false"
+      @saved="handleLanguageSaved"
+    />
+
+    <EditLanguageModal
+      v-if="editingLanguage"
+      :concept-id="concept.id"
+      :language="editingLanguage"
+      @close="editingLanguage = null"
+      @saved="handleLanguageSaved"
+    />
+
+    <AddTermModal
+      v-if="addTermLanguageCode"
+      :concept-id="concept.id"
+      :language-code="addTermLanguageCode"
+      @close="addTermLanguageCode = null"
+      @saved="handleTermSaved"
+    />
+
+    <EditTermModal
+      v-if="editingTerm"
+      :concept-id="concept.id"
+      :language-code="editingTermLanguageCode"
+      :term="editingTerm"
+      @close="editingTerm = null; editingTermLanguageCode = null"
+      @saved="handleTermSaved"
     />
   </div>
 </template>
 
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
-import { RouterLink } from 'vue-router'
-import { getConcept } from '../services/concepts'
+import { RouterLink, useRouter } from 'vue-router'
+import { getConcept, deleteConcept } from '../services/concepts'
+import { deleteLanguage } from '../services/languages'
+import { deleteTerm } from '../services/terms'
 import EditConceptModal from '../components/modals/EditConceptModal.vue'
+import AddLanguageModal from '../components/modals/AddLanguageModal.vue'
+import EditLanguageModal from '../components/modals/EditLanguageModal.vue'
+import AddTermModal from '../components/modals/AddTermModal.vue'
+import EditTermModal from '../components/modals/EditTermModal.vue'
+import LanguageSection from '../components/concept/LanguageSection.vue'
 
 const props = defineProps({ id: { type: String, required: true } })
+const router = useRouter()
 
 const concept = ref(null)
 const loading = ref(true)
 const notFound = ref(false)
 const showDetails = ref(false)
 const showEditModal = ref(false)
+const showAddLanguageModal = ref(false)
+const editingLanguage = ref(null)
+const addTermLanguageCode = ref(null)
+const editingTerm = ref(null)
+const editingTermLanguageCode = ref(null)
 
 const relationDetails = reactive({})
 
@@ -218,6 +303,65 @@ async function loadConceptData() {
 function handleSaved() {
   showEditModal.value = false
   loadConceptData()
+}
+
+function handleLanguageSaved() {
+  showAddLanguageModal.value = false
+  editingLanguage.value = null
+  loadConceptData()
+}
+
+function handleAddTermRequest(languageCode) {
+  addTermLanguageCode.value = languageCode
+}
+
+function handleEditTermRequest({ term, languageCode }) {
+  editingTerm.value = term
+  editingTermLanguageCode.value = languageCode
+}
+
+function handleTermSaved() {
+  addTermLanguageCode.value = null
+  editingTerm.value = null
+  editingTermLanguageCode.value = null
+  loadConceptData()
+}
+
+async function handleDeleteConcept() {
+  const languageCount = concept.value.languages.length
+  const message = languageCount > 0
+    ? `Delete this concept? This will also delete its ${languageCount} language section${languageCount === 1 ? '' : 's'} and all their terms. This can't be undone.`
+    : `Delete this concept? This can't be undone.`
+
+  if (!window.confirm(message)) return
+
+  try {
+    await deleteConcept(concept.value.id)
+    router.push('/concepts')
+  } catch (err) {
+    window.alert('Failed to delete the concept. Please try again.')
+    console.error(err)
+  }
+}
+
+async function handleDeleteLanguageRequest(languageCode) {
+  try {
+    await deleteLanguage(concept.value.id, languageCode)
+    loadConceptData()
+  } catch (err) {
+    window.alert('Failed to delete the language. Please try again.')
+    console.error(err)
+  }
+}
+
+async function handleDeleteTermRequest({ term, languageCode }) {
+  try {
+    await deleteTerm(concept.value.id, languageCode, term.id)
+    loadConceptData()
+  } catch (err) {
+    window.alert('Failed to delete the term. Please try again.')
+    console.error(err)
+  }
 }
 
 onMounted(loadConceptData)

@@ -93,4 +93,14 @@ updateConceptLanguage <- function(pool, conceptId, languageCode, definition, ext
 
 # --- DELETE ------------------------------------------------------------
 
-# (non ancora implementata)
+# Nuova funzione
+# Elimina una sezione lingua e, in cascata, tutti i suoi termini.
+# Restituisce FALSE se la lingua non è associata al concetto.
+deleteConceptLanguage <- function(pool, conceptId, languageCode) {
+  if (!languageExistsForConcept(pool, conceptId, languageCode)) return(FALSE)
+
+  dbExecute(pool, sqlDeleteTermsForLanguage, params = list(conceptId, languageCode))
+  dbExecute(pool, sqlDeleteConceptLanguage, params = list(conceptId, languageCode))
+
+  TRUE
+}

@@ -137,3 +137,20 @@ sqlCheckTermIdExists <- "
   FROM term
   WHERE id = ?
 "
+
+# --- DELETE ---
+
+sqlDeleteTermsForConcept <- "DELETE FROM term WHERE concept = ?"
+sqlDeleteConceptLanguagesForConcept <- "DELETE FROM concept_language WHERE concept = ?"
+sqlDeleteConcept <- "DELETE FROM concept WHERE id = ?"
+
+# pulizia dei riferimenti da altri concetti, una query per ciascuna delle 4 relazioni
+sqlClearSuperordinateReferences <- "UPDATE concept SET superordinate = '' WHERE superordinate = ?"
+sqlClearSubordinateReferences <- "UPDATE concept SET subordinate = '' WHERE subordinate = ?"
+sqlClearComprehensiveReferences <- "UPDATE concept SET comprehensive = '' WHERE comprehensive = ?"
+sqlClearPartitiveReferences <- "UPDATE concept SET partitive = '' WHERE partitive = ?"
+
+sqlDeleteTermsForLanguage <- "DELETE FROM term WHERE concept = ? AND language = ?"
+sqlDeleteConceptLanguage <- "DELETE FROM concept_language WHERE concept = ? AND language = ?"
+
+sqlDeleteTerm <- "DELETE FROM term WHERE id = ? AND concept = ? AND language = ?"

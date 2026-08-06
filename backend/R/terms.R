@@ -15,6 +15,44 @@ library(DBI)
 
 # --- SELECT ---------------------------------------------------------------
 
+# Nuova funzione (helper)
+# Converte due vettori paralleli (codici, etichette) in una lista di oggetti
+# {value, label} pronta per jsonlite, con unbox già applicato su ogni campo —
+# altrimenti ogni stringa verrebbe serializzata come array di un elemento.
+buildValueLabelList <- function(values, labels) {
+  mapply(function(v, l) {
+    list(value = jsonlite::unbox(v), label = jsonlite::unbox(l))
+  }, values, labels, SIMPLIFY = FALSE, USE.NAMES = FALSE)
+}
+
+# Nuova funzione
+# Liste di vocabolario statiche per i campi del termine.
+getTermVocabularies <- function() {
+  list(
+    usageValues = c("preferred term", "admitted term", "deprecated term", "obsolete term"),
+    typeValues = c("abbreviation", "acronym", "appellation", "borrowed term", "blend",
+                   "complex term", "clipped term", "compound term", "initialism",
+                   "multi-word term", "proper name", "simple term", "single-word term", "symbol"),
+    posValues = buildValueLabelList(
+      c("ADJ", "ADP", "ADV", "AUX", "CCONJ", "DET", "INTJ", "NOUN", "NUM",
+        "PART", "PRON", "PROPN", "PUNCT", "SCONJ", "SYM", "VERB", "X"),
+      c("adjective", "adposition", "adverb", "auxiliary", "coordinating conjunction",
+        "determiner", "interjection", "noun", "numeral", "particle", "pronoun",
+        "proper noun", "punctuation", "subordinating conjunction", "symbol", "verb", "other")
+    ),
+    genderValues = buildValueLabelList(
+      c("Com", "Fem", "Mas", "Neut"),
+      c("common", "feminine", "masculine", "neuter")
+    ),
+    numberValues = buildValueLabelList(
+      c("Coll", "Count", "Dual", "Grpa", "Grpl", "Inv", "Pauc", "Plur", "Ptan", "Sing", "Tri"),
+      c("collective/mass/singulare tantum", "count plural", "dual number", "greater paucal number",
+        "greater plural number", "inverse number", "paucal number", "plural number",
+        "plurale tantum", "singular number", "trial number")
+    )
+  )
+}
+
 # selectTermsGivenConcept -> getTermsForLanguage (ambito modificato)
 # Nell'originale filtrava solo per concept (tutte le lingue insieme). Qui filtra
 # anche per languageCode, perché i termini sono annidati dentro ogni sezione lingua.
@@ -111,4 +149,12 @@ updateTerm <- function(pool, termId, conceptId, languageCode, designation, usage
 
 # --- DELETE ------------------------------------------------------------
 
-# (non ancora implementata)
+# Nuova funzione
+# Elimina un termine. Restituisce FALSE se non esiste per quella coppia concetto/lingua.
+deleteTerm <- function(pool, termId, conceptId, languageCode) {
+  if (!termExists(pool, termId, conceptId, languageCode)) return(FALSE)
+
+  dbExecute(pool, sqlDeleteTerm, params = list(termId, conceptId, languageCode))
+
+  TRUE
+}
