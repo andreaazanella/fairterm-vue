@@ -1,8 +1,20 @@
 <template>
   <div class="page">
     <header class="page-header">
-      <h1>Concepts</h1>
+      <!-- Breadcrumb di navigazione -->
+      <nav class="breadcrumb">
+        <RouterLink to="/concepts" class="breadcrumb__current">Concepts</RouterLink>
+      </nav>
     </header>
-    <p class="placeholder-note">This page is not yet implemented — it will arrive in the next step.</p>
+
+    <hr class="page__divider" />
+
+    <!-- Titolo pagina -->
+    <div class="title-row">
+      <h1 class="concept-title">Concepts</h1>
+    </div>
+
+    <!-- Segnaposto: pagina non ancora implementata -->
+    <p class="placeholder-note">This page is not yet implemented.</p>
   </div>
 </template>

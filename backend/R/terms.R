@@ -1,6 +1,6 @@
 # terms.R
 
-# Logica per la risorsa "term" (SELECT/INSERT/UPDATE).
+# Logica per la risorsa "term" (SELECT/INSERT/UPDATE/DELETE).
 
 # Le funzioni equivalenti dell'app Shiny originale erano sparse tra
 # db_functions_select.R / db_functions_insert.R / db_functions_update.R.
@@ -8,17 +8,16 @@
 # Qui sono raggruppate per risorsa.
 
 # Legenda dei commenti sopra ogni funzione:
-#   funzione Shiny -> funzione Vue   = portata dall'app originale, eventualmente rinominata
-#   Nuova funzione                   = non esisteva nell'app Shiny originale
+# funzione Shiny -> funzione Vue   = portata dall'app originale, eventualmente rinominata
+# Nuova funzione                   = non esisteva nell'app Shiny originale
 
 library(DBI)
 
 # --- SELECT ---------------------------------------------------------------
 
-# Nuova funzione (helper)
+# Nuova funzione
 # Converte due vettori paralleli (codici, etichette) in una lista di oggetti
-# {value, label} pronta per jsonlite, con unbox già applicato su ogni campo —
-# altrimenti ogni stringa verrebbe serializzata come array di un elemento.
+# {value, label} pronta per jsonlite, con unbox già applicato su ogni campo.
 buildValueLabelList <- function(values, labels) {
   mapply(function(v, l) {
     list(value = jsonlite::unbox(v), label = jsonlite::unbox(l))
@@ -53,7 +52,7 @@ getTermVocabularies <- function() {
   )
 }
 
-# selectTermsGivenConcept -> getTermsForLanguage (ambito modificato)
+# selectTermsGivenConcept -> getTermsForLanguage
 # Nell'originale filtrava solo per concept (tutte le lingue insieme). Qui filtra
 # anche per languageCode, perché i termini sono annidati dentro ogni sezione lingua.
 getTermsForLanguage <- function(pool, conceptId, languageCode) {
@@ -126,8 +125,7 @@ insertTerm <- function(pool, conceptId, languageCode, designation, usage, partOf
 # --- UPDATE ------------------------------------------------------------
 
 # updateTerm -> updateTerm
-# Aggiorna un termine esistente (concept e language non sono modificabili,
-# non a caso non sono tra i parametri accettati in scrittura).
+# Aggiorna un termine esistente.
 # Restituisce NULL se il termine non esiste per quella coppia concetto/lingua.
 updateTerm <- function(pool, termId, conceptId, languageCode, designation, usage, partOfSpeech,
                         grammaticalGender, grammaticalNumber, type, context,

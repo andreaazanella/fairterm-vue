@@ -1,5 +1,6 @@
 <template>
   <Modal @close-request="handleCloseRequest">
+    <!-- Header del modale: icona, titolo, sottotitolo, bottone chiudi -->
     <div class="modal-header">
       <div class="card__header-main">
         <div class="card__header-icon" aria-hidden="true">
@@ -15,8 +16,10 @@
       </button>
     </div>
 
+    <!-- Messaggio di errore -->
     <p v-if="errorMessage" class="form-error">⚠️ {{ errorMessage }}</p>
 
+    <!-- Lingua, obbligatoria: dropdown già filtrata sulle lingue non ancora associate -->
     <div class="field">
       <label>Language <span class="required">*</span></label>
       <select class="dropdown" v-model="form.language" required>
@@ -25,26 +28,31 @@
       </select>
     </div>
 
+    <!-- Definition, obbligatoria -->
     <div class="field">
       <label>Definition <span class="required">*</span></label>
       <textarea v-model="form.definition" rows="2" placeholder="Enter the definition"></textarea>
     </div>
 
+    <!-- External cross reference -->
     <div class="field">
       <label>External cross reference</label>
       <input type="text" v-model="form.externalCrossReference" placeholder="e.g. https://... or a reference code" />
     </div>
 
+    <!-- Source -->
     <div class="field">
       <label>Source</label>
       <input type="text" v-model="form.source" placeholder="e.g. ISO/IEC 2382-1:1993, 2127" />
     </div>
 
+    <!-- Notes -->
     <div class="field">
       <label>Notes</label>
       <textarea v-model="form.notes" rows="2" placeholder="Optional notes"></textarea>
     </div>
 
+    <!-- Azioni: annulla / crea -->
     <div class="modal-footer">
       <button type="button" class="btn btn--ghost" @click="handleCloseRequest">Cancel</button>
       <button type="button" class="btn btn--primary" :disabled="saving" @click="handleSave">
@@ -77,6 +85,7 @@ const availableLanguages = computed(() =>
   languages.value.filter((lang) => !props.existingLanguageCodes.includes(lang.id))
 )
 
+// Form vuoto: a differenza di Edit, qui non c'è nessuna lingua esistente da precompilare
 const form = reactive({
   language: '',
   definition: '',
@@ -90,11 +99,14 @@ onMounted(() => {
   initialSnapshot = JSON.stringify(form)
 })
 
+// Confronta lo stato attuale del form con lo snapshot iniziale, per sapere se
+// ci sono modifiche non salvate al momento della chiusura
 const isDirty = computed(() => JSON.stringify(form) !== initialSnapshot)
 
 const errorMessage = ref('')
 const saving = ref(false)
 
+// Chiede conferma solo se ci sono modifiche non salvate, altrimenti chiude subito
 function handleCloseRequest() {
   if (isDirty.value) {
     const discard = window.confirm('You have unsaved changes. Discard them?')
@@ -103,6 +115,9 @@ function handleCloseRequest() {
   emit('close')
 }
 
+// Valida i campi obbligatori, crea la sezione lingua e comunica al genitore
+// le lingue aggiornate del concetto. Il 409 (duplicato) è gestito come rete
+// di sicurezza, dato che la select esclude già le lingue già presenti.
 async function handleSave() {
   errorMessage.value = ''
 

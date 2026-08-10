@@ -3,8 +3,7 @@
 # Router Plumber.
 
 # Scope attuale: CONCEPT (visualizzazione, creazione, modifica) e LANGUAGE/TERM
-# annidati sotto un concetto (aggiunta e modifica). Nessuna DELETE ancora implementata
-# su nessuna delle tre risorse.
+# annidati sotto un concetto (aggiunta e modifica).
 
 library(plumber)
 
@@ -17,8 +16,6 @@ source("sql/statements.R")
 
 pool <- createPool()
 
-# TODO: sostituire con l'utente autenticato reale quando il login sarà collegato
-# (nell'app originale è hardcoded a "user0").
 currentUser <- "user0"
 
 #* @apiTitle FAIRterm 2.0 API
@@ -257,8 +254,7 @@ function(id, code, req, res) {
   list(terms = terms)
 }
 
-#* Aggiorna un termine esistente. Concept e language non sono modificabili
-#* (non a caso non compaiono nel body, solo nel percorso).
+#* Aggiorna un termine esistente. Concept e language non sono modificabili.
 #* Restituisce 404 se il termine non è associato a questo concetto/lingua.
 #* @param id ID del concetto.
 #* @param code Codice della lingua.

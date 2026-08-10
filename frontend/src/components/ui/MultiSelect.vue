@@ -5,25 +5,26 @@
 
 <template>
   <div class="multiselect" ref="rootEl">
-    
-    <!-- Control -->
+
+    <!-- Controllo principale: mostra placeholder o tag selezionati -->
     <div class="multiselect__control" tabindex="0" @click="open = !open" @keydown.enter="open = !open">
       <div class="multiselect__tags">
-        <!-- Placeholder -->
+        <!-- Placeholder, visibile solo se non c'è nessuna selezione -->
         <span v-if="modelValue.length === 0" class="multiselect__placeholder">{{ placeholder }}</span>
-        <!-- Selected values as tags -->
+        <!-- Valori selezionati, mostrati come tag rimovibili -->
         <span v-for="value in modelValue" :key="value" class="multiselect__tag">
           {{ value }}
-          <button type="button" class="multiselect__tag-remove" @click.stop="remove(value)" aria-label="Rimuovi">×</button>
+          <button type="button" class="multiselect__tag-remove" @click.stop="remove(value)" aria-label="Remove">×</button>
         </span>
       </div>
       <svg class="multiselect__chevron" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <path d="M6 9l6 6 6-6" />
       </svg>
     </div>
-    
-    <!-- Dropdown -->
+
+    <!-- Dropdown con ricerca ed elenco opzioni -->
     <div v-if="open" class="multiselect__dropdown">
+      <!-- Campo di ricerca, filtra le opzioni sotto -->
       <input
         type="search"
         class="multiselect__search"
@@ -32,7 +33,9 @@
         @click.stop
       />
       <ul class="multiselect__options">
+        <!-- Stato vuoto: nessuna opzione corrisponde alla ricerca -->
         <li v-if="filteredOptions.length === 0" class="multiselect__empty">No results found</li>
+        <!-- Singola opzione, con checkbox visivo per lo stato selezionato -->
         <li
           v-for="option in filteredOptions"
           :key="option"

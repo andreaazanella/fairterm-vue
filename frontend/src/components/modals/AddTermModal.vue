@@ -1,5 +1,6 @@
 <template>
   <Modal @close-request="handleCloseRequest">
+    <!-- Header del modale: icona, titolo, sottotitolo con la lingua di destinazione, bottone chiudi -->
     <div class="modal-header">
       <div class="card__header-main">
         <div class="card__header-icon" aria-hidden="true">
@@ -15,8 +16,10 @@
       </button>
     </div>
 
+    <!-- Messaggio di errore -->
     <p v-if="errorMessage" class="form-error">⚠️ {{ errorMessage }}</p>
 
+    <!-- Designation e Usage, entrambi obbligatori -->
     <div class="relations-grid">
       <div class="field">
         <label>Designation <span class="required">*</span></label>
@@ -26,48 +29,52 @@
         <label>Usage <span class="required">*</span></label>
         <select class="dropdown" v-model="form.usage" required>
           <option value="">Select usage</option>
-          <option v-for="value in usageValues" :key="value" :value="value">{{ value }}</option>
+          <option v-for="value in usageValues" :key="value" :value="value">{{ capitalize(value) }}</option>
         </select>
       </div>
     </div>
 
+    <!-- Part of speech, gender, number: facoltativi, "required" solo per lo stile del placeholder -->
     <div class="relations-grid">
       <div class="field">
         <label>Part of speech</label>
         <select class="dropdown" v-model="form.partOfSpeech" required>
           <option value="">Select part of speech</option>
-          <option v-for="pos in posValues" :key="pos.value" :value="pos.value">{{ pos.label }}</option>
+          <option v-for="pos in posValues" :key="pos.value" :value="pos.value">{{ capitalize(pos.label) }}</option>
         </select>
       </div>
       <div class="field">
         <label>Grammatical gender</label>
         <select class="dropdown" v-model="form.grammaticalGender" required>
           <option value="">Select gender</option>
-          <option v-for="g in genderValues" :key="g.value" :value="g.value">{{ g.label }}</option>
+          <option v-for="g in genderValues" :key="g.value" :value="g.value">{{ capitalize(g.label) }}</option>
         </select>
       </div>
       <div class="field">
         <label>Grammatical number</label>
         <select class="dropdown" v-model="form.grammaticalNumber" required>
           <option value="">Select number</option>
-          <option v-for="n in numberValues" :key="n.value" :value="n.value">{{ n.label }}</option>
+          <option v-for="n in numberValues" :key="n.value" :value="n.value">{{ capitalize(n.label) }}</option>
         </select>
       </div>
     </div>
 
+    <!-- Type -->
     <div class="field">
       <label>Type</label>
       <select class="dropdown" v-model="form.type" required>
         <option value="">Select a type</option>
-        <option v-for="value in typeValues" :key="value" :value="value">{{ value }}</option>
+        <option v-for="value in typeValues" :key="value" :value="value">{{ capitalize(value) }}</option>
       </select>
     </div>
 
+    <!-- Context -->
     <div class="field">
       <label>Context</label>
       <textarea v-model="form.context" rows="2" placeholder="Enter a usage example"></textarea>
     </div>
 
+    <!-- External cross reference e Source -->
     <div class="relations-grid">
       <div class="field">
         <label>External cross reference</label>
@@ -79,6 +86,7 @@
       </div>
     </div>
 
+    <!-- Register e Collocation, entrambi testo libero -->
     <div class="relations-grid">
       <div class="field">
         <label>Register</label>
@@ -90,11 +98,13 @@
       </div>
     </div>
 
+    <!-- Notes -->
     <div class="field">
       <label>Notes</label>
       <textarea v-model="form.notes" rows="2" placeholder="Optional notes"></textarea>
     </div>
 
+    <!-- Azioni: annulla / crea -->
     <div class="modal-footer">
       <button type="button" class="btn btn--ghost" @click="handleCloseRequest">Cancel</button>
       <button type="button" class="btn btn--primary" :disabled="saving" @click="handleSave">
@@ -118,9 +128,10 @@ const props = defineProps({
 
 const emit = defineEmits(['close', 'saved'])
 
-const { usageValues, typeValues, posValues, genderValues, numberValues, languageName, load } = useReferenceData()
+const { usageValues, typeValues, posValues, genderValues, numberValues, languageName, load, capitalize } = useReferenceData()
 load()
 
+// Form vuoto: a differenza di Edit, qui non c'è nessun termine esistente da precompilare
 const form = reactive({
   designation: '',
   usage: '',
@@ -141,11 +152,14 @@ onMounted(() => {
   initialSnapshot = JSON.stringify(form)
 })
 
+// Confronta lo stato attuale del form con lo snapshot iniziale, per sapere se
+// ci sono modifiche non salvate al momento della chiusura
 const isDirty = computed(() => JSON.stringify(form) !== initialSnapshot)
 
 const errorMessage = ref('')
 const saving = ref(false)
 
+// Chiede conferma solo se ci sono modifiche non salvate, altrimenti chiude subito
 function handleCloseRequest() {
   if (isDirty.value) {
     const discard = window.confirm('You have unsaved changes. Discard them?')
@@ -154,6 +168,8 @@ function handleCloseRequest() {
   emit('close')
 }
 
+// Valida i campi obbligatori, crea il termine sotto la lingua indicata e
+// comunica al genitore i termini aggiornati di quella lingua
 async function handleSave() {
   errorMessage.value = ''
 

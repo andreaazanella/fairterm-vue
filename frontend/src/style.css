@@ -1,5 +1,9 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
+/* ==========================================================================
+   1. VARIABILI
+   ========================================================================== */
+
 :root {
   --color-bg: #FDFBF7;
   --color-bg-subtle: #F4EFE6;
@@ -19,6 +23,10 @@
   --content-width: 1320px;
 }
 
+/* ==========================================================================
+   2. RESET E BASE
+   ========================================================================== */
+
 * {
   box-sizing: border-box;
 }
@@ -36,7 +44,16 @@ body {
   line-height: 1.5;
 }
 
-h1, h3 {
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* ==========================================================================
+   3. TIPOGRAFIA
+   ========================================================================== */
+
+h1 {
   margin: 0;
   font-weight: 600;
 }
@@ -48,18 +65,15 @@ h2 {
   line-height: 1.2;
 }
 
-a {
-  color: inherit;
-  text-decoration: none;
-}
-
 p.card__subtitle {
   margin: 0;
   font-size: 14px;
   line-height: 1.2;
 }
 
-/* --- form elements di base, condivisi da tutte le pagine --- */
+/* ==========================================================================
+   4. ELEMENTI DI FORM
+   ========================================================================== */
 
 input[type="text"],
 input[type="search"],
@@ -104,6 +118,7 @@ label {
   color: var(--color-accent);
 }
 
+/* select con placeholder "muted" finché non è stato scelto un valore */
 select.dropdown:invalid {
   color: var(--color-muted);
 }
@@ -150,7 +165,9 @@ select.dropdown:invalid {
   color: #fff;
 }
 
-/* --- card, layout condiviso tra le pagine --- */
+/* ==========================================================================
+   5. LAYOUT DI PAGINA
+   ========================================================================== */
 
 .page {
   max-width: var(--content-width);
@@ -200,6 +217,10 @@ select.dropdown:invalid {
   font-size: 32px;
   margin: 0;
 }
+
+/* ==========================================================================
+   6. CARD
+   ========================================================================== */
 
 .card {
   background: var(--color-bg-subtle);
@@ -253,14 +274,12 @@ select.dropdown:invalid {
   margin: 28px 0;
 }
 
+/* ==========================================================================
+   7. FORM LAYOUT E STATI (campi, griglie, errori, tag di sola lettura)
+   ========================================================================== */
+
 .field {
   margin-bottom: 18px;
-}
-
-.field__hint {
-  margin: 6px 0 0;
-  font-size: 12px;
-  color: var(--color-muted);
 }
 
 .relations-grid {
@@ -284,7 +303,8 @@ select.dropdown:invalid {
   font-size: 14px;
 }
 
-/* elenco subject field in sola lettura */
+/* --- tag, per campi in sola lettura (subject field, relazioni, ecc.) --- */
+
 .tag-list {
   display: flex;
   flex-wrap: wrap;
@@ -305,18 +325,15 @@ select.dropdown:invalid {
   word-break: break-word;
 }
 
-.term-card__designation {
-  font-weight: 600;
-  font-size: 14px;
-  min-width: 0;
-  overflow-wrap: break-word;
-}
-
 .tag--muted {
   color: var(--color-muted);
   border-style: dashed;
   font-style: italic;
 }
+
+/* ==========================================================================
+   8. STATI DI PAGINA (caricamento, audit)
+   ========================================================================== */
 
 .page-state {
   display: flex;
@@ -349,7 +366,9 @@ select.dropdown:invalid {
   margin-top: 20px;
 }
 
-/* --- modale --- */
+/* ==========================================================================
+   9. MODALE
+   ========================================================================== */
 
 .modal-overlay {
   position: fixed;
@@ -406,7 +425,10 @@ select.dropdown:invalid {
   margin-top: 24px;
 }
 
-/* footer istituzionale, uguale su tutte le pagine */
+/* ==========================================================================
+   10. FOOTER ISTITUZIONALE
+   ========================================================================== */
+
 .app-footer {
   max-width: var(--content-width);
   margin: 0 auto;
@@ -464,7 +486,9 @@ select.dropdown:invalid {
   flex-shrink: 0;
 }
 
-/* --- lingue --- */
+/* ==========================================================================
+   11. LINGUE (LanguageSection)
+   ========================================================================== */
 
 .lang-badge {
   width: 36px;
@@ -543,7 +567,9 @@ select.dropdown:invalid {
   gap: 16px;
 }
 
-/* --- termini --- */
+/* ==========================================================================
+   12. TERMINI (TermCard)
+   ========================================================================== */
 
 .term-card {
   border: 1px solid var(--color-border);

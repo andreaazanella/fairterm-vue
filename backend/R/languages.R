@@ -1,6 +1,6 @@
 # languages.R
 
-# Logica per la risorsa "language" (SELECT/INSERT/UPDATE).
+# Logica per la risorsa "language" (SELECT/INSERT/UPDATE/DELETE).
 
 # Le funzioni equivalenti dell'app Shiny originale erano sparse tra
 # db_functions_select.R / db_functions_insert.R / db_functions_update.R.
@@ -8,8 +8,8 @@
 # Qui sono raggruppate per risorsa.
 
 # Legenda dei commenti sopra ogni funzione:
-#   funzione Shiny -> funzione Vue   = portata dall'app originale, eventualmente rinominata
-#   Nuova funzione                   = non esisteva nell'app Shiny originale
+# funzione Shiny -> funzione Vue   = portata dall'app originale, eventualmente rinominata
+# Nuova funzione                   = non esisteva nell'app Shiny originale
 
 library(DBI)
 
