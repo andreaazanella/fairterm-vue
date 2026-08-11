@@ -59,13 +59,15 @@
       </div>
     </div>
 
-    <!-- Type -->
+    <!-- Type: multi-valore, salvato nel DB come stringa unica separata da ";" -->
     <div class="field">
       <label>Type</label>
-      <select class="dropdown" v-model="form.type" required>
-        <option value="">Select a type</option>
-        <option v-for="value in typeValues" :key="value" :value="value">{{ capitalize(value) }}</option>
-      </select>
+      <MultiSelect
+        v-model="form.type"
+        :options="typeValues"
+        placeholder="Select one or more types"
+        capitalize
+      />
     </div>
 
     <!-- Context -->
@@ -118,6 +120,7 @@
 <script setup>
 import { reactive, ref, computed, onMounted } from 'vue'
 import Modal from '../ui/Modal.vue'
+import MultiSelect from '../ui/MultiSelect.vue'
 import { useReferenceData } from '../../composables/useReferenceData'
 import { updateTerm } from '../../services/terms'
 
@@ -139,7 +142,7 @@ const form = reactive({
   partOfSpeech: props.term.partOfSpeech || '',
   grammaticalGender: props.term.grammaticalGender || '',
   grammaticalNumber: props.term.grammaticalNumber || '',
-  type: props.term.type || '',
+  type: props.term.type ? props.term.type.split(';') : [],
   context: props.term.context || '',
   externalCrossReference: props.term.externalCrossReference || '',
   source: props.term.source || '',
@@ -191,7 +194,7 @@ async function handleSave() {
       partOfSpeech: form.partOfSpeech || null,
       grammaticalGender: form.grammaticalGender || null,
       grammaticalNumber: form.grammaticalNumber || null,
-      type: form.type || null,
+      type: form.type.length > 0 ? form.type.join(';') : null,
       context: form.context || null,
       externalCrossReference: form.externalCrossReference || null,
       source: form.source || null,

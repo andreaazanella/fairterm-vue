@@ -20,7 +20,7 @@
 
     <!-- Corpo espanso: tutti i dettagli del termine, in sola lettura -->
     <div v-if="expanded" class="term-card__body">
-      <!-- Part of speech, gender, number, type -->
+      <!-- Part of speech, gender, number -->
       <div class="relations-grid">
         <div class="field">
           <label>Part of speech</label>
@@ -46,11 +46,14 @@
             </span>
           </div>
         </div>
-        <div class="field">
-          <label>Type</label>
-          <div class="tag-list">
-            <span class="tag" :class="{ 'tag--muted': !term.type }">{{ term.type || 'None' }}</span>
-          </div>
+      </div>
+
+      <!-- Type: multi-valore, su riga propria (può contenere più tag e occupare più spazio delle altre righe) -->
+      <div class="field">
+        <label>Type</label>
+        <div class="tag-list">
+          <span v-if="typeList.length === 0" class="tag tag--muted">None</span>
+          <span v-else v-for="t in typeList" :key="t" class="tag">{{ capitalize(t) }}</span>
         </div>
       </div>
 
@@ -115,13 +118,13 @@ const props = defineProps({
 
 const emit = defineEmits(['edit-request', 'delete-request'])
 
-const { posLabel, genderLabel, numberLabel, load } = useReferenceData()
+const { posLabel, genderLabel, numberLabel, load, capitalize } = useReferenceData()
 load()
 
 const expanded = ref(false)
 
-// usage arriva come "preferred term"/"admitted term"/ecc.: nel badge viene mostrata
-// solo la prima parola, il valore inviato all'API resta invariato.
+// usage arriva come "preferred term"/"admitted term"/ecc.: nel badge viene mostrato
+// solo la prima parola (più compatto), il valore inviato all'API resta invariato.
 const usageBadgeClass = computed(() => {
   if (!props.term.usage) return ''
   const key = props.term.usage.split(' ')[0]
@@ -134,7 +137,12 @@ const usageLabel = computed(() => {
   return word.charAt(0).toUpperCase() + word.slice(1)
 })
 
-// Bordo sinistro colorato in base allo status, stesso principio del bordo
+// term.type arriva dal backend come stringa unica separata da ";" (es.
+// "complex term;multi-word term"): la spezziamo qui solo per la visualizzazione,
+// il valore effettivo salvato nel DB resta la stringa originale
+const typeList = computed(() => (props.term.type ? props.term.type.split(';') : []))
+
+// bordo sinistro colorato in base allo status, stesso principio del bordo
 // per lingua in LanguageSection ma qui la mappatura è curata (solo 4 valori
 // possibili, non 183 lingue) invece che calcolata da un hash.
 const usageColors = {

@@ -13,7 +13,7 @@
         <span v-if="modelValue.length === 0" class="multiselect__placeholder">{{ placeholder }}</span>
         <!-- Valori selezionati, mostrati come tag rimovibili -->
         <span v-for="value in modelValue" :key="value" class="multiselect__tag">
-          {{ value }}
+          {{ displayLabel(value) }}
           <button type="button" class="multiselect__tag-remove" @click.stop="remove(value)" aria-label="Remove">×</button>
         </span>
       </div>
@@ -48,7 +48,7 @@
               <path d="M20 6L9 17l-5-5" />
             </svg>
           </span>
-          {{ option }}
+          {{ displayLabel(option) }}
         </li>
       </ul>
     </div>
@@ -62,6 +62,9 @@ const props = defineProps({
   modelValue: { type: Array, required: true },
   options: { type: Array, default: () => [] },
   placeholder: { type: String, default: 'Select...' },
+  // Se true, mostra le opzioni con la prima lettera maiuscola (solo a schermo
+  // il valore in modelValue resta quello grezzo passato in options)
+  capitalize: { type: Boolean, default: false },
 })
 
 const emit = defineEmits(['update:modelValue'])
@@ -95,6 +98,12 @@ function handleClickOutside(event) {
   if (rootEl.value && !rootEl.value.contains(event.target)) {
     open.value = false
   }
+}
+
+// Restituisce l'etichetta da mostrare a schermo, eventualmente con la prima lettera maiuscola
+function displayLabel(option) {
+  if (!props.capitalize) return option
+  return option.charAt(0).toUpperCase() + option.slice(1)
 }
 
 onMounted(() => document.addEventListener('click', handleClickOutside))
