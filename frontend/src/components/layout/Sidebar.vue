@@ -3,6 +3,7 @@
     <div class="sidebar__brand">
       <!-- Logo -->
       <span class="sidebar__brand-mark" aria-hidden="true">
+        <img :src="logo" alt="" class="sidebar__brand-logo" />
       </span>
       <!-- Nome del sito -->
       <span class="sidebar__brand-name">FAIRterm <span class="sidebar__brand-version">2.0</span></span>
@@ -51,6 +52,7 @@
 
 <script setup>
 import { RouterLink } from 'vue-router'
+import logo from '../../assets/logo.png'
 </script>
 
 <style scoped>
@@ -83,6 +85,13 @@ import { RouterLink } from 'vue-router'
   justify-content: center;
   color: #fff;
   flex-shrink: 0;
+  overflow: hidden;
+}
+
+.sidebar__brand-logo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .sidebar__brand-name {
