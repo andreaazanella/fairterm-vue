@@ -1,37 +1,35 @@
 # concepts.R
 
-# Logica per la risorsa "concept" (SELECT/INSERT/UPDATE).
-# [Scope attuale: solo campi di livello concetto (subject_field, subdomain, relazioni)].
+# Logica per la risorsa "concept" (SELECT/INSERT/UPDATE/DELETE).
+
 # Le funzioni equivalenti dell'app Shiny originale erano sparse tra
 # db_functions_select.R / db_functions_insert.R / db_functions_update.R.
+
 # Qui sono raggruppate per risorsa.
+
+# Legenda dei commenti sopra ogni funzione:
+# funzione Shiny -> funzione Vue   = portata dall'app originale, eventualmente rinominata
+# Nuova funzione                   = non esisteva nell'app Shiny originale
 
 library(DBI)
 
-# Usa il valore di sinistra se non è NULL/vuoto, altrimenti quello di destra
-`%||%` <- function(a, b) {
-  if (is.null(a) || length(a) == 0 || (is.character(a) && a == "")) b else a
-}
-
-# Converte una stringa vuota/NA in NULL, per non restituire " " al frontend
-# al posto di un vero "nessun valore"
-naIfBlank <- function(x) {
-  if (is.null(x) || length(x) == 0 || is.na(x) || trimws(x) == "") NA_character_ else x
-}
-
 # --- SELECT ---------------------------------------------------------------
 
+# Nuova funzione
+# Restituisce la lista di tutti i subject field disponibili.
 getSubjectFields <- function(pool) {
   dbGetQuery(pool, sqlGetSubjectFields)
 }
 
+# selectConceptsGivenDomain -> getConcepts
 # Lista concetti di un dominio, filtrati per utente corrente.
 # Usata sia per popolare le select "superordinate/subordinate/comprehensive/partitive"
 # (altri concetti dello stesso dominio) sia per la pagina "Concepts".
 getConcepts <- function(pool, subjectField, user) {
   dbGetQuery(pool, sqlGetConceptsByDomainUser, params = list(subjectField, user))
 }
- 
+
+# Nuova funzione
 # Dettaglio di un concetto. Restituisce NULL se non esiste (l'endpoint la traduce in 404).
 getConceptById <- function(pool, id) {
 
@@ -53,15 +51,17 @@ getConceptById <- function(pool, id) {
     createdBy = jsonlite::unbox(concept$created_by[[1]]),
     createdOn = jsonlite::unbox(concept$created_on[[1]]),
     updatedBy = jsonlite::unbox(concept$updated_by[[1]]),
-    updatedOn = jsonlite::unbox(concept$updated_on[[1]])
+    updatedOn = jsonlite::unbox(concept$updated_on[[1]]),
+    languages = getLanguagesForConcept(pool, id)
   )
 }
 
-# --- INSERT ----------------------------------------------------------------
+# --- INSERT ------------------------------------------------------------
 
-# Genera un ID.
-# Stessa logica random 0-999 dell'app originale, ma con controllo
-# di unicità su TUTTO il database invece che solo sul dominio corrente.
+# Nuova funzione
+# Genera un id libero. Stessa logica random 0-999 dell'app originale (lì era
+# inline in server.R, qui è una funzione a sé), ma con controllo di unicità
+# su TUTTO il database invece che solo sul dominio corrente.
 generateConceptId <- function(pool) {
   repeat {
     candidate <- as.character(floor(runif(1, min = 0, max = 1000)))
@@ -70,8 +70,9 @@ generateConceptId <- function(pool) {
   }
 }
 
-# Inserisce un nuovo concetto.
-# Restituisce il concetto appena creato (con tutti i campi, incluso id).
+# insertConcept -> insertConcept
+# Inserisce un nuovo concetto. Restituisce il concetto appena creato
+# (con tutti i campi, incluso l'id generato).
 insertConcept <- function(pool, subjectFields, subdomain, superordinate, subordinate, comprehensive, partitive, user) {
 
   id <- generateConceptId(pool)
@@ -92,8 +93,8 @@ insertConcept <- function(pool, subjectFields, subdomain, superordinate, subordi
 
 # --- UPDATE ------------------------------------------------------------
 
-# Aggiorna un concetto esistente.
-# Restituisce NULL se il concetto non esiste.
+# updateConcept -> updateConcept
+# Aggiorna un concetto esistente. Restituisce NULL se il concetto non esiste.
 updateConcept <- function(pool, id, subjectFields, subdomain, superordinate, subordinate, comprehensive, partitive, user) {
 
   existing <- getConceptById(pool, id)
@@ -113,4 +114,28 @@ updateConcept <- function(pool, id, subjectFields, subdomain, superordinate, sub
   }
 
   getConceptById(pool, id)
+}
+
+# --- DELETE ------------------------------------------------------------
+
+# Nuova funzione
+# Elimina un concetto e tutto ciò che dipende da lui (subject field, lingue,
+# termini), poi ripulisce i riferimenti da altri concetti che lo avevano come
+# relazione (superordinate/subordinate/comprehensive/partitive), per non
+# lasciare id orfani in giro. Restituisce FALSE se il concetto non esiste.
+deleteConcept <- function(pool, id) {
+  existing <- getConceptById(pool, id)
+  if (is.null(existing)) return(FALSE)
+
+  dbExecute(pool, sqlDeleteTermsForConcept, params = list(id))
+  dbExecute(pool, sqlDeleteConceptLanguagesForConcept, params = list(id))
+  dbExecute(pool, sqlDeleteConceptSubjects, params = list(id))
+  dbExecute(pool, sqlDeleteConcept, params = list(id))
+
+  dbExecute(pool, sqlClearSuperordinateReferences, params = list(id))
+  dbExecute(pool, sqlClearSubordinateReferences, params = list(id))
+  dbExecute(pool, sqlClearComprehensiveReferences, params = list(id))
+  dbExecute(pool, sqlClearPartitiveReferences, params = list(id))
+
+  TRUE
 }

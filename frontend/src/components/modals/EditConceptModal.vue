@@ -1,5 +1,6 @@
 <template>
   <Modal @close-request="handleCloseRequest">
+    <!-- Header del modale: icona, titolo, sottotitolo, bottone chiudi -->
     <div class="modal-header">
       <div class="card__header-main">
         <div class="card__header-icon" aria-hidden="true">
@@ -7,7 +8,7 @@
         </div>
         <div>
           <h2>Edit concept</h2>
-          <p class="card__subtitle">Edit the concept's information. Fields that can't be changed are disabled.</p>
+          <p class="card__subtitle">Edit the concept's information. The concept ID can't be changed.</p>
         </div>
       </div>
       <button type="button" class="modal-close" @click="handleCloseRequest" aria-label="Close">
@@ -15,8 +16,10 @@
       </button>
     </div>
 
+    <!-- Messaggio di errore -->
     <p v-if="errorMessage" class="form-error">⚠️ {{ errorMessage }}</p>
 
+    <!-- Concept ID: sola lettura, non modificabile -->
     <div class="field">
       <label>Concept ID</label>
       <div class="tag-list">
@@ -24,6 +27,7 @@
       </div>
     </div>
 
+    <!-- Subject field, modificabile: minimo uno -->
     <div class="field">
       <label>Subject field <span class="required">*</span></label>
       <MultiSelect
@@ -33,6 +37,7 @@
       />
     </div>
 
+    <!-- Subdomain -->
     <div class="field">
       <label>Subdomain</label>
       <input type="text" v-model="form.subdomain" placeholder="Enter the subdomain (optional)"/>
@@ -40,12 +45,15 @@
 
     <hr class="card__divider" />
 
+    <!-- Sezione relazioni concettuali, sempre visibile qui (nessun toggle show/hide) -->
     <div class="card__header">
+      <!-- Icona -->
       <div class="card__header-icon" aria-hidden="true">
         <svg xmlns="http://www.w3.org/2000/svg" height="25px" viewBox="0 -960 960 960" width="25px" fill="currentColor">
           <path d="M121-121q-41-41-41-99t41-99q41-41 99-41 18 0 35 4.5t32 12.5l153-153v-110q-44-13-72-49.5T340-740q0-58 41-99t99-41q58 0 99 41t41 99q0 48-28 84.5T520-606v110l154 153q15-8 31.5-12.5T740-360q58 0 99 41t41 99q0 58-41 99t-99 41q-58 0-99-41t-41-99q0-18 4.5-35t12.5-32L480-424 343-287q8 15 12.5 32t4.5 35q0 58-41 99t-99 41q-58 0-99-41Zm661.5-56.5Q800-195 800-220t-17.5-42.5Q765-280 740-280t-42.5 17.5Q680-245 680-220t17.5 42.5Q715-160 740-160t42.5-17.5Zm-260-520Q540-715 540-740t-17.5-42.5Q505-800 480-800t-42.5 17.5Q420-765 420-740t17.5 42.5Q455-680 480-680t42.5-17.5Zm-260 520Q280-195 280-220t-17.5-42.5Q245-280 220-280t-42.5 17.5Q160-245 160-220t17.5 42.5Q195-160 220-160t42.5-17.5Z"/>
         </svg>
       </div>
+      <!-- Titolo e sottotitolo -->
       <div>
         <h2>Concept relations</h2>
         <p class="card__subtitle">Link this concept to other existing concepts</p>
@@ -53,6 +61,7 @@
     </div>
 
     <div class="relations-grid">
+      <!-- Superordinate -->
       <div class="field">
         <label>Superordinate</label>
         <select class="dropdown" v-model="form.relations.superordinate" required>
@@ -63,6 +72,7 @@
         </select>
       </div>
 
+      <!-- Subordinate -->
       <div class="field">
         <label>Subordinate</label>
         <select class="dropdown" v-model="form.relations.subordinate" required>
@@ -73,6 +83,7 @@
         </select>
       </div>
 
+      <!-- Comprehensive -->
       <div class="field">
         <label>Comprehensive</label>
         <select class="dropdown" v-model="form.relations.comprehensive" required>
@@ -83,6 +94,7 @@
         </select>
       </div>
 
+      <!-- Partitive -->
       <div class="field">
         <label>Partitive</label>
         <select class="dropdown" v-model="form.relations.partitive" required>
@@ -94,6 +106,7 @@
       </div>
     </div>
 
+    <!-- Azioni: annulla / salva -->
     <div class="modal-footer">
       <button type="button" class="btn btn--ghost" @click="handleCloseRequest">Cancel</button>
       <button type="button" class="btn btn--primary" :disabled="saving" @click="handleSave">
@@ -121,6 +134,8 @@ const { subjectFields, load } = useReferenceData()
 load()
 const subjectFieldOptions = computed(() => subjectFields.value)
 
+// Converte le relazioni del concetto (che possono essere null) nel formato
+// del form, dove il "vuoto" è sempre una stringa (serve per il binding con <select>)
 function relationsToForm(relations) {
   return {
     superordinate: relations.superordinate || '',
@@ -130,6 +145,7 @@ function relationsToForm(relations) {
   }
 }
 
+// Form pre-compilato con i valori attuali del concetto da modificare
 const form = reactive({
   subjectFields: [...props.concept.subjectFields],
   subdomain: props.concept.subdomain || '',
@@ -141,12 +157,19 @@ onMounted(() => {
   initialSnapshot = JSON.stringify(form)
 })
 
+// Confronta lo stato attuale del form con lo snapshot iniziale, per sapere se
+// ci sono modifiche non salvate al momento della chiusura
 const isDirty = computed(() => JSON.stringify(form) !== initialSnapshot)
 
 const relationCandidates = ref([])
 const errorMessage = ref('')
 const saving = ref(false)
 
+// Ricarica i concetti candidati per le relazioni ogni volta che cambiano i
+// subject field selezionati. "immediate" perché, a differenza di "Nuovo
+// Concetto", qui il form parte già con dei subject field (quelli del concetto
+// esistente), quindi la lista va popolata anche al primo render, non solo al cambio.
+// Il concetto in modifica viene sempre escluso: non può essere relazione di se stesso.
 watch(
   () => form.subjectFields,
   async (fields) => {
@@ -163,6 +186,7 @@ watch(
   { deep: true, immediate: true }
 )
 
+// Chiede conferma solo se ci sono modifiche non salvate, altrimenti chiude subito
 function handleCloseRequest() {
   if (isDirty.value) {
     const discard = window.confirm('You have unsaved changes. Discard them?')
@@ -171,6 +195,8 @@ function handleCloseRequest() {
   emit('close')
 }
 
+// Valida il form, invia solo le relazioni effettivamente valorizzate, salva
+// le modifiche e comunica al genitore il concetto aggiornato
 async function handleSave() {
   errorMessage.value = ''
 
